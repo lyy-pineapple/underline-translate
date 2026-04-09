@@ -30,3 +30,15 @@
   cursor: pointer;
   user-select: none;
 }
+
+/* Specific styling for the translation remove action */
+.inline-translate-remove {
+  margin-left: 12px;
+  font-size: 0.85em;
+  color: #999;
+  cursor: pointer;
+}
+
+.inline-translate-remove:hover {
+  color: #666;
+}

@@ -251,6 +251,20 @@ function hashText(text: string): string {
 }
 
 /**
+ * Ensures that a container element has a unique ID for tracking translations.
+ * If no ID exists, a new one is generated and stored in a data attribute.
+ * @param container The element to identify.
+ * @returns The unique container ID.
+ */
+function ensureContainerId(container: HTMLElement): string {
+  const existing = container.getAttribute("data-inline-translate-id");
+  if (existing) return existing;
+  const newId = `inline-${crypto.randomUUID()}`;
+  container.setAttribute("data-inline-translate-id", newId);
+  return newId;
+}
+
+/**
  * Minimal MD5 implementation for Baidu API signature.
  * IMPORTANT: Hash input must be UTF-8 bytes (not UTF-16 code units).
  */
@@ -696,22 +710,26 @@ async function onTranslateClick() {
   const container = findClosestBlock(range.commonAncestorContainer);
   if (!container || !container.parentElement) return;
 
+  // Ensure the container has a stable ID for deduplication.
+  const containerId = ensureContainerId(container);
+
   // Generate a unique hash for the selected text.
   // This allows us to find and replace existing translations for the same text.
   const sourceHash = hashText(text);
 
   /**
-   * Search for an existing translation block with the same hash.
+   * Search for an existing translation block with the same hash and container ID.
    * If found, we'll replace it (update-in-place).
    */
   const existing = container.parentElement.querySelector(
-    `.inline-translate-result[data-source-hash="${sourceHash}"]`
+    `.inline-translate-result[data-source-hash="${sourceHash}"][data-source-container-id="${containerId}"]`
   ) as HTMLElement | null;
 
   // Create the loading indicator block.
   const { block, cancel } = createLoadingBlock();
-  // Assign the hash to the block's data attribute for future identification.
+  // Assign the hash and container ID to the block's data attributes for future identification.
   block.dataset.sourceHash = sourceHash;
+  block.dataset.sourceContainerId = containerId;
 
   // Perform the update-in-place or insertion.
   if (existing) {
@@ -772,6 +790,13 @@ async function onTranslateClick() {
       // Update the block with the translated text and remove the loading style.
       block.classList.remove("inline-translate-loading");
       block.textContent = translated;
+
+      // Add a "Remove" action to allow users to dismiss the translation block.
+      const remove = document.createElement("span");
+      remove.className = "inline-translate-remove";
+      remove.textContent = "Remove";
+      remove.addEventListener("click", () => block.remove());
+      block.appendChild(remove);
     } finally {
       // Always cleanup the timeout timer.
       timeout.cleanup();
