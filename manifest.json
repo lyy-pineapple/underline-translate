@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Inline Translate",
+  "version": "0.1.0",
+  "description": "Select text and show translation below the paragraph.",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": [
+    "https://translate.googleapis.com/*",
+    "https://openapi.youdao.com/*",
+    "https://api.fanyi.baidu.com/*",
+    "https://tmt.intl.tencentcloudapi.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["dist/content.js"],
+      "css": ["dist/styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_page": "dist/options.html"
+}

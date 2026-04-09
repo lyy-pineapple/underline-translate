@@ -1,0 +1,12 @@
+{
+  "name": "inline-translate",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json && cp src/options.html dist/ && cp src/styles.css dist/"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "@types/chrome": "^0.0.270"
+  }
+}
