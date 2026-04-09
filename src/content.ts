@@ -204,7 +204,7 @@ function findClosestBlock(element: Node | null): HTMLElement | null {
   while (current && current !== document.body) {
     const tag = current.tagName?.toLowerCase();
     // Common block-level tags where translation can be inserted.
-    if (tag === "p" || tag === "div" || tag === "article") {
+    if (tag === "p" || tag === "div" || tag === "article" || tag === "li") {
       return current;
     }
     current = current.parentElement;
