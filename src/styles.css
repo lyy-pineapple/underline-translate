@@ -1,0 +1,32 @@
+/* Styles for the inline translation results and UI elements */
+
+.inline-translate-result {
+  color: #666;
+  font-size: 0.9em;
+  margin-top: 6px;
+  margin-left: 12px;
+  line-height: 1.4;
+}
+
+.inline-translate-loading {
+  color: #999;
+  font-style: italic;
+}
+
+.inline-translate-action {
+  cursor: pointer;
+  color: #4a6cf7;
+  margin-left: 8px;
+}
+
+.inline-translate-fab {
+  position: absolute;
+  z-index: 2147483647;
+  background: #4a6cf7;
+  color: #fff;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+}
