@@ -1,19 +1,4 @@
-/**
-  * Underline Translate Content Script
- * 
- * This script is responsible for:
- * 1. Monitoring user text selections on the web page.
- * 2. Displaying a floating "Translate" button near the selected text.
- * 3. Fetching translations from the Google Translate API when requested.
- * 4. Inserting the translated text directly into the page's DOM, 
- *    positioned appropriately below the relevant paragraph.
- * 
- * Future tasks will implement the core logic for selection tracking,
- * UI management, and API integration.
- */
 
-// Initial entry point for the content script.
-// This log confirms the script has been successfully injected into the page.
 console.log("Underline Translate content script initialized and loaded.");
 
 type Provider = "google" | "tencent" | "youdao" | "baidu";
@@ -192,48 +177,7 @@ document.addEventListener("click", (event) => {
   }
 });
 
-/**
- * Finds the closest parent block-level element (paragraph, div, article) 
- * for a given DOM node.
- * This is used to determine where to insert the translated content.
- * @param element The DOM node to start searching from.
- * @returns The parent element if found, otherwise null.
- */
-function findClosestBlock(element: Node | null): HTMLElement | null {
-  let current = element as HTMLElement | null;
-  while (current && current !== document.body) {
-    const tag = current.tagName?.toLowerCase();
-    if (
-      tag === "p" ||
-      tag === "div" ||
-      tag === "article" ||
-      tag === "section" ||
-      tag === "main" ||
-      tag === "blockquote" ||
-      tag === "pre" ||
-      tag === "code" ||
-      tag === "td" ||
-      tag === "th" ||
-      tag === "li" ||
-      tag === "ul" ||
-      tag === "ol" ||
-      tag === "h1" ||
-      tag === "h2" ||
-      tag === "h3" ||
-      tag === "h4" ||
-      tag === "h5" ||
-      tag === "h6"
-    ) {
-      return current;
-    }
-    const display = window.getComputedStyle(current).display;
-    if (display && display !== "inline" && display !== "inline-block" && display !== "contents") {
-      return current;
-    }
-    current = current.parentElement;
-  }
-  return null;
-}
+import { findClosestBlock, ensureContainerId } from "./dom-helpers";
 
 /**
  * Creates a loading indicator block with a cancel action.
@@ -279,13 +223,6 @@ function hashText(text: string): string {
  * @param container The element to identify.
  * @returns The unique container ID.
  */
-function ensureContainerId(container: HTMLElement): string {
-  const existing = container.getAttribute("data-inline-translate-id");
-  if (existing) return existing;
-  const newId = `inline-${crypto.randomUUID()}`;
-  container.setAttribute("data-inline-translate-id", newId);
-  return newId;
-}
 
 /**
  * Minimal MD5 implementation for Baidu API signature.
