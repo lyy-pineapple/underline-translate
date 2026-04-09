@@ -2,11 +2,14 @@
   "name": "underline-translate",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json && cp src/options.html dist/ && cp src/styles.css dist/"
+    "build": "tsc -p tsconfig.json && cp src/options.html dist/ && cp src/styles.css dist/",
+    "test": "node --test tests/translation-container.test.js"
   },
   "devDependencies": {
     "typescript": "^5.6.0",
-    "@types/chrome": "^0.0.270"
+    "@types/chrome": "^0.0.270",
+    "jsdom": "^24.0.0"
   }
 }
