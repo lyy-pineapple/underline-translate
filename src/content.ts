@@ -1,5 +1,5 @@
 /**
- * Inline Translate Content Script
+  * Underline Translate Content Script
  * 
  * This script is responsible for:
  * 1. Monitoring user text selections on the web page.
@@ -14,7 +14,7 @@
 
 // Initial entry point for the content script.
 // This log confirms the script has been successfully injected into the page.
-console.log("Inline Translate content script initialized and loaded.");
+console.log("Underline Translate content script initialized and loaded.");
 
 type Provider = "google" | "tencent" | "youdao" | "baidu";
 

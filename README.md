@@ -1,6 +1,6 @@
-# Inline Translate Chrome Extension
+# Underline Translate Chrome Extension
 
-Inline Translate is a minimal Chrome Extension that lets you select text on any webpage and insert the translated result directly below the source paragraph. It supports multiple translation providers with configurable API keys.
+Underline Translate is a minimal Chrome Extension that lets you select text on any webpage and insert the translated result directly below the source paragraph. It supports multiple translation providers with configurable API keys.
 
 ## Features
 

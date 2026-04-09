@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Inline Translate",
+  "name": "Underline Translate",
   "version": "0.1.0",
-  "description": "Select text and show translation below the paragraph.",
+  "description": "Underline-selected text and show translation below the paragraph.",
   "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": [
     "https://translate.googleapis.com/*",
