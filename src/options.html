@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inline Translate Options</title>
+  </head>
+  <body>
+    <h1>Inline Translate Options</h1>
+    <label>
+      Provider:
+      <select id="provider">
+        <option value="google">Google (Free)</option>
+        <option value="tencent">Tencent</option>
+        <option value="youdao">Youdao</option>
+        <option value="baidu">Baidu</option>
+      </select>
+    </label>
+
+    <div id="providerFields">
+      <div data-provider="tencent" style="display: none;">
+        <label>SecretId: <input id="tencentSecretId" type="text" /></label>
+        <label>SecretKey: <input id="tencentSecretKey" type="password" /></label>
+        <label>Region: <input id="tencentRegion" type="text" value="ap-guangzhou" /></label>
+      </div>
+
+      <div data-provider="youdao" style="display: none;">
+        <label>AppKey: <input id="youdaoAppKey" type="text" /></label>
+        <label>AppSecret: <input id="youdaoAppSecret" type="password" /></label>
+      </div>
+
+      <div data-provider="baidu" style="display: none;">
+        <label>AppId: <input id="baiduAppId" type="text" /></label>
+        <label>AppKey: <input id="baiduAppKey" type="password" /></label>
+      </div>
+    </div>
+
+    <label>
+      Target language (e.g. zh-CN):
+      <input id="targetLang" type="text" />
+    </label>
+    <button id="saveBtn">Save</button>
+    <p id="status"></p>
+    <script src="options.js"></script>
+  </body>
+</html>
