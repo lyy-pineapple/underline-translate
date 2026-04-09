@@ -203,8 +203,31 @@ function findClosestBlock(element: Node | null): HTMLElement | null {
   let current = element as HTMLElement | null;
   while (current && current !== document.body) {
     const tag = current.tagName?.toLowerCase();
-    // Common block-level tags where translation can be inserted.
-    if (tag === "p" || tag === "div" || tag === "article" || tag === "li" || tag === "h1" || tag === "h2" || tag === "h3" || tag === "h4" || tag === "h5" || tag === "h6") {
+    if (
+      tag === "p" ||
+      tag === "div" ||
+      tag === "article" ||
+      tag === "section" ||
+      tag === "main" ||
+      tag === "blockquote" ||
+      tag === "pre" ||
+      tag === "code" ||
+      tag === "td" ||
+      tag === "th" ||
+      tag === "li" ||
+      tag === "ul" ||
+      tag === "ol" ||
+      tag === "h1" ||
+      tag === "h2" ||
+      tag === "h3" ||
+      tag === "h4" ||
+      tag === "h5" ||
+      tag === "h6"
+    ) {
+      return current;
+    }
+    const display = window.getComputedStyle(current).display;
+    if (display && display !== "inline" && display !== "inline-block" && display !== "contents") {
       return current;
     }
     current = current.parentElement;
