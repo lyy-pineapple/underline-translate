@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json && cp src/options.html dist/ && cp src/styles.css dist/",
-    "test": "node --test tests/translation-container.test.js"
+    "build": "rm -rf dist && tsc -p tsconfig.json && cp src/options.html dist/ && cp src/styles.css dist/",
+    "test": "npm run build && node --test tests/*.test.js"
   },
   "devDependencies": {
     "typescript": "^5.6.0",
