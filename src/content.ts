@@ -15,13 +15,20 @@ type ProviderConfig = {
  * Loads the translation provider configuration from local storage.
  */
 async function loadProviderConfig(): Promise<ProviderConfig> {
-  const items = await chrome.storage.local.get({
+  const defaults: ProviderConfig = {
     provider: "google",
     targetLang: "zh-CN",
     tencent: { secretId: "", secretKey: "", region: "ap-guangzhou" },
     youdao: { appKey: "", appSecret: "" },
     baidu: { appId: "", appKey: "" }
-  });
+  };
+
+  const storage = globalThis.chrome?.storage?.local;
+  if (!storage?.get) {
+    return defaults;
+  }
+
+  const items = await storage.get(defaults);
   return items as ProviderConfig;
 }
 
@@ -180,37 +187,77 @@ document.addEventListener("click", (event) => {
 function findClosestBlock(element: Node | null): HTMLElement | null {
   let current = element as HTMLElement | null;
   while (current && current !== document.body) {
-    const tag = current.tagName?.toLowerCase();
-    if (
-      tag === "p" ||
-      tag === "div" ||
-      tag === "article" ||
-      tag === "section" ||
-      tag === "main" ||
-      tag === "blockquote" ||
-      tag === "pre" ||
-      tag === "code" ||
-      tag === "td" ||
-      tag === "th" ||
-      tag === "li" ||
-      tag === "ul" ||
-      tag === "ol" ||
-      tag === "h1" ||
-      tag === "h2" ||
-      tag === "h3" ||
-      tag === "h4" ||
-      tag === "h5" ||
-      tag === "h6"
-    ) {
-      return current;
-    }
-    const display = window.getComputedStyle(current).display;
-    if (display && display !== "inline" && display !== "inline-block" && display !== "contents") {
-      return current;
+    if (current.nodeType === Node.ELEMENT_NODE) {
+      const tag = current.tagName?.toLowerCase();
+      if (
+        tag === "p" ||
+        tag === "div" ||
+        tag === "article" ||
+        tag === "section" ||
+        tag === "main" ||
+        tag === "blockquote" ||
+        tag === "pre" ||
+        tag === "code" ||
+        tag === "td" ||
+        tag === "th" ||
+        tag === "li" ||
+        tag === "ul" ||
+        tag === "ol" ||
+        tag === "h1" ||
+        tag === "h2" ||
+        tag === "h3" ||
+        tag === "h4" ||
+        tag === "h5" ||
+        tag === "h6"
+      ) {
+        return current;
+      }
+      const display = window.getComputedStyle(current).display;
+      if (display && display !== "inline" && display !== "inline-block" && display !== "contents") {
+        return current;
+      }
     }
     current = current.parentElement;
   }
   return null;
+}
+
+/**
+ * Collects selected blocks and their merged text.
+ * If blocks share parent, iterates siblings from start to end.
+ * Else falls back to range.toString().trim and anchor on end block.
+ * @param range The selected text range.
+ * @returns An object containing the blocks, merged text, and anchor element.
+ */
+function collectSelectedBlocks(range: Range): { blocks: HTMLElement[], mergedText: string, anchor: HTMLElement | null } {
+  const startBlock = findClosestBlock(range.startContainer);
+  const endBlock = findClosestBlock(range.endContainer);
+
+  if (startBlock && endBlock && startBlock.parentElement === endBlock.parentElement && startBlock !== endBlock) {
+    const blocks: HTMLElement[] = [];
+    let current: Element | null = startBlock;
+    while (current) {
+      if (current instanceof HTMLElement) {
+        blocks.push(current);
+      }
+      if (current === endBlock) break;
+      current = current.nextElementSibling;
+    }
+    const mergedText = blocks.map(b => (b.textContent || "").trim()).join("\n\n");
+    return { blocks, mergedText, anchor: endBlock };
+  } else {
+    // Single block or disparate blocks
+    let anchor = endBlock || findClosestBlock(range.endContainer);
+    if (!anchor) {
+      const container = range.endContainer;
+      anchor = container.nodeType === Node.ELEMENT_NODE ? (container as HTMLElement) : (container.parentElement as HTMLElement | null);
+    }
+    return {
+      blocks: anchor ? [anchor] : [],
+      mergedText: range.toString().trim(),
+      anchor: anchor
+    };
+  }
 }
 
 function ensureContainerId(container: HTMLElement): string {
@@ -692,11 +739,6 @@ function withTimeout(signal: AbortSignal, ms: number) {
  * and updates the DOM in-place.
  */
 async function onTranslateClick() {
-  // Prefer the live selection, but fall back to the last snapshot to
-  // handle cases where the selection is cleared on mouseup (multi-line).
-  const text = getSelectionText() || lastSelectionText;
-  if (!text) return;
-
   const selection = window.getSelection();
   let range: Range | null = null;
 
@@ -708,9 +750,12 @@ async function onTranslateClick() {
 
   if (!range) return;
 
+  const { mergedText, anchor } = collectSelectedBlocks(range);
+  if (!mergedText) return;
+
   // Locate the paragraph or container for the selected text.
   // The translation will be inserted right after this element.
-  const container = findClosestBlock(range.commonAncestorContainer);
+  const container = anchor;
   if (!container || !container.parentElement) return;
 
   // Ensure the container has a stable ID for deduplication.
@@ -718,7 +763,7 @@ async function onTranslateClick() {
 
   // Generate a unique hash for the selected text.
   // This allows us to find and replace existing translations for the same text.
-  const sourceHash = hashText(text);
+  const sourceHash = hashText(mergedText);
 
   /**
    * Search for an existing translation block with the same hash and container ID.
@@ -770,22 +815,22 @@ async function onTranslateClick() {
       
       // Route the translation request based on the selected provider.
       if (config.provider === "google") {
-        translated = await translateText(text, targetLang, timeout.signal);
+        translated = await translateText(mergedText, targetLang, timeout.signal);
       } else if (config.provider === "baidu") {
         if (!config.baidu.appId || !config.baidu.appKey) {
           throw new Error("Baidu AppId or AppKey is missing. Please check options.");
         }
-        translated = await translateWithBaidu(text, targetLang, config.baidu, timeout.signal);
+        translated = await translateWithBaidu(mergedText, targetLang, config.baidu, timeout.signal);
       } else if (config.provider === "youdao") {
         if (!config.youdao.appKey || !config.youdao.appSecret) {
           throw new Error("Youdao AppKey or AppSecret is missing. Please check options.");
         }
-        translated = await translateWithYoudao(text, targetLang, config.youdao, timeout.signal);
+        translated = await translateWithYoudao(mergedText, targetLang, config.youdao, timeout.signal);
       } else if (config.provider === "tencent") {
         if (!config.tencent.secretId || !config.tencent.secretKey) {
           throw new Error("Tencent SecretId or SecretKey is missing. Please check options.");
         }
-        translated = await translateWithTencent(text, targetLang, config.tencent, timeout.signal);
+        translated = await translateWithTencent(mergedText, targetLang, config.tencent, timeout.signal);
       } else {
         throw new Error(`Unsupported translation provider: ${config.provider}`);
       }
